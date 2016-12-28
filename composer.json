@@ -48,7 +48,8 @@
 		"bea/autoload":"dev-master",
 		"wpackagist-theme/twentyseventeen":"*@stable",
 		"acf/advanced-custom-fields-pro":"*@stable",
-		"wpackagist-plugin/custom-post-type-ui":"*@stable"
+		"wpackagist-plugin/custom-post-type-ui":"*@stable",
+		"facetwp/facetwp":"*@stable"
 	},
 	"suggest":{
 		"wp-cli/wp-cli":"*@stable"

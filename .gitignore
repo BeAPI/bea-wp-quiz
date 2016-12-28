@@ -178,3 +178,7 @@ content/plugins/rewrite-rules-inspector/
 # BEGIN custom-post-type-ui #
 /content/plugins/custom-post-type-ui/
 # END custom-post-type-ui #
+
+# BEGIN facetwp #
+/content/plugins/facetwp/
+# END facetwp #
