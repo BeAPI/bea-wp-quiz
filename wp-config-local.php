@@ -1,10 +1,5 @@
-
-<?php
-if ( is_file( dirname( __FILE__ ) . '/../env_dev' ) && is_file( dirname( __FILE__ ) . '/wp-config-dev.php' ) ) {
+<?php if ( is_file( dirname( __FILE__ ) . '/../env_dev' ) && is_file( dirname( __FILE__ ) . '/wp-config-dev.php' ) ) {
 	require( dirname( __FILE__ ) . '/wp-config-dev.php' );
-	return true;
-} elseif( is_file( dirname( __FILE__ ) . '/../env_qualif' ) && is_file( dirname( __FILE__ ) . '/wp-config-qualif.php' ) ) {
-	require( dirname( __FILE__ ) . '/wp-config-qualif.php' );
 	return true;
 }
 
