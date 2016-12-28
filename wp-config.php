@@ -33,7 +33,7 @@ if ( ! defined( 'DISALLOW_FILE_EDIT' ) ) {
 }
 
 if ( ! isset( $table_prefix ) ) {
-	$table_prefix = 'wp_';
+	$table_prefix = 'wp_quiz_';
 }
 
 // https://api.wordpress.org/secret-key/1.1/salt/
