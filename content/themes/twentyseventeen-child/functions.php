@@ -39,6 +39,8 @@ function bea_term_link( $termlink, $term, $taxonomy ) {
 				if ( $term->slug !== $g_taxonomies[ $taxonomy ] ) {
 					// Add the current slug to the existing slug
 					$taxonomies[ $taxonomy ] = array( $g_taxonomies[ $taxonomy ], $term->slug );
+				} else {
+					$taxonomies = $g_taxonomies;
 				}
 			} elseif ( ! in_array( $term->slug, $g_taxonomies[ $taxonomy ] ) ) {
 				// Add the current slug into the taxonomy's get args
@@ -58,4 +60,108 @@ function bea_term_link( $termlink, $term, $taxonomy ) {
 	}
 
 	return esc_url( add_query_arg( array( 'bea_taxonomy' => $taxonomies ), get_post_type_archive_link( $p_type ) ) );
+}
+
+if ( ! post_type_exists( 'question' ) ) {
+	$labels = array(
+		"name"          => __( 'Questions', '' ),
+		"singular_name" => __( 'Question', '' ),
+	);
+
+	$args = array(
+		"label"               => __( 'Questions', '' ),
+		"labels"              => $labels,
+		"description"         => "",
+		"public"              => true,
+		"publicly_queryable"  => true,
+		"show_ui"             => true,
+		"show_in_rest"        => false,
+		"rest_base"           => "",
+		"has_archive"         => true,
+		"show_in_menu"        => true,
+		"exclude_from_search" => false,
+		"capability_type"     => "post",
+		"map_meta_cap"        => true,
+		"hierarchical"        => false,
+		"rewrite"             => array( "slug" => "question", "with_front" => true ),
+		"query_var"           => true,
+		"menu_icon"           => "dashicons-editor-help",
+		"supports"            => array( "title", "editor" ),
+		"taxonomies"          => array( "type", "promotion", "niveau" ),
+	);
+	register_post_type( "question", $args );
+}
+
+if ( post_type_exists( 'question' ) ) {
+	if ( ! taxonomy_exists( 'type' ) ) {
+		$labels = array(
+			"name"          => __( 'Types', '' ),
+			"singular_name" => __( 'Type', '' ),
+		);
+
+		$args = array(
+			"label"              => __( 'Types', '' ),
+			"labels"             => $labels,
+			"public"             => true,
+			"hierarchical"       => false,
+			"show_ui"            => true,
+			"show_in_menu"       => true,
+			"show_in_nav_menus"  => true,
+			"query_var"          => true,
+			"rewrite"            => array( 'slug' => 'type', 'with_front' => true, ),
+			"show_admin_column"  => false,
+			"show_in_rest"       => false,
+			"rest_base"          => "",
+			"show_in_quick_edit" => false,
+		);
+		register_taxonomy( "type", array( "question" ), $args );
+	}
+
+	if ( ! taxonomy_exists( 'promotion' ) ) {
+		$labels = array(
+			"name"          => __( 'Promotions', '' ),
+			"singular_name" => __( 'Promotion', '' ),
+		);
+
+		$args = array(
+			"label"              => __( 'Promotions', '' ),
+			"labels"             => $labels,
+			"public"             => true,
+			"hierarchical"       => false,
+			"show_ui"            => true,
+			"show_in_menu"       => true,
+			"show_in_nav_menus"  => true,
+			"query_var"          => true,
+			"rewrite"            => array( 'slug' => 'promotion', 'with_front' => true, ),
+			"show_admin_column"  => false,
+			"show_in_rest"       => false,
+			"rest_base"          => "",
+			"show_in_quick_edit" => false,
+		);
+		register_taxonomy( "promotion", array( "question" ), $args );
+	}
+
+	if ( ! taxonomy_exists( 'niveau' ) ) {
+		$labels = array(
+			"name"          => __( 'Niveaux', '' ),
+			"singular_name" => __( 'niveau', '' ),
+		);
+
+		$args = array(
+			"label"              => __( 'Niveaux', '' ),
+			"labels"             => $labels,
+			"public"             => true,
+			"hierarchical"       => false,
+			"show_ui"            => true,
+			"show_in_menu"       => true,
+			"show_in_nav_menus"  => true,
+			"query_var"          => true,
+			"rewrite"            => array( 'slug' => 'niveau', 'with_front' => true, ),
+			"show_admin_column"  => false,
+			"show_in_rest"       => false,
+			"rest_base"          => "",
+			"show_in_quick_edit" => false,
+		);
+		register_taxonomy( "niveau", array( "question" ), $args );
+	}
 }
