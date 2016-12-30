@@ -56,7 +56,7 @@ function bea_term_link( $termlink, $term, $taxonomy ) {
 		}
 	} else {
 		// Default, get current taxonomy term's slug
-		$taxonomies[ $taxonomy ] = $term->slug;
+		$taxonomies[ $taxonomy ][] = $term->slug;
 	}
 
 	return esc_url( add_query_arg( array( 'bea_taxonomy' => $taxonomies ), get_post_type_archive_link( $p_type ) ) );
@@ -165,3 +165,27 @@ if ( post_type_exists( 'question' ) ) {
 		register_taxonomy( "niveau", array( "question" ), $args );
 	}
 }
+
+add_action( 'parse_query', function ( \WP_Query $query ) {
+	if ( ! $query->is_search() && ! $query->is_archive() || ! isset( $_GET['bea_taxonomy'] ) ) {
+		return $query;
+	}
+
+	// Get all taxonomies
+	$taxononomies = $_GET['bea_taxonomy'];
+	foreach ( $taxononomies as $taxonomy => $terms ) {
+		$tax_query[] = array(
+			'taxonomy' => $taxonomy,
+			'field'    => 'slug',
+			'terms'    => is_array( $terms ) ? $terms : (array) $terms,
+			'operator' => 'NOT IN'
+		);
+	}
+
+	// Anyway add AND relation for multiple tax query
+	$tax_query['relation'] = 'AND';
+
+	$query->set( 'tax_query', array( $tax_query ) );
+
+	return $query;
+} );
