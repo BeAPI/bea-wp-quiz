@@ -1,6 +1,4 @@
-<?php add_filter( 'term_link', 'bea_term_link', 20, 3 );
-
-
+<?php
 /**
  * Rewrite the taxonomy term's link
  * This allow to filter the archive page
@@ -13,7 +11,7 @@
  *
  * @return string
  */
-function bea_term_link( $termlink, $term, $taxonomy ) {
+add_action( 'term_link', function ( $termlink, $term, $taxonomy ) {
 	if ( is_admin() ) {
 		return $termlink;
 	}
@@ -21,11 +19,6 @@ function bea_term_link( $termlink, $term, $taxonomy ) {
 	$wanted_taxonomies = array( 'type', 'promotion', 'niveau' );
 
 	if ( empty( $wanted_taxonomies ) || ! in_array( $taxonomy, $wanted_taxonomies ) ) {
-		return $termlink;
-	}
-
-	$p_type = get_post_type();
-	if ( ! post_type_exists( $p_type ) ) {
 		return $termlink;
 	}
 
@@ -38,29 +31,41 @@ function bea_term_link( $termlink, $term, $taxonomy ) {
 				// If not already in args
 				if ( $term->slug !== $g_taxonomies[ $taxonomy ] ) {
 					// Add the current slug to the existing slug
-					$taxonomies[ $taxonomy ] = array( $g_taxonomies[ $taxonomy ], $term->slug );
+					$taxonomies[ $taxonomy ][] = $term->slug;
 				} else {
 					$taxonomies = $g_taxonomies;
 				}
 			} elseif ( ! in_array( $term->slug, $g_taxonomies[ $taxonomy ] ) ) {
 				// Add the current slug into the taxonomy's get args
-				$taxonomies[ $taxonomy ] = array( $g_taxonomies[ $taxonomy ], $term->slug );
+				$taxonomies                = $g_taxonomies;
+				$taxonomies[ $taxonomy ][] = $term->slug;
 			} else {
-				// No matching, then returns the get args as it
+				// Current term already exists, so take it off to "deselect" it
+				$terms = $g_taxonomies[ $taxonomy ];
+
+				$key_find = array_search( $term->slug, $terms );
+				unset( $terms[ $key_find ] );
+
+				if ( empty( $terms ) ) {
+					unset( $g_taxonomies[ $taxonomy ] );
+				} else {
+					$g_taxonomies[ $taxonomy ] = array_values( $terms );
+				}
+
 				$taxonomies = $g_taxonomies;
 			}
 		} else {
 			// As no terms from current taxonomy, add to existing get args the current taxonomy term
-			$taxonomies              = $g_taxonomies;
-			$taxonomies[ $taxonomy ] = array( $term->slug );
+			$taxonomies                = $g_taxonomies;
+			$taxonomies[ $taxonomy ][] = $term->slug;
 		}
 	} else {
 		// Default, get current taxonomy term's slug
 		$taxonomies[ $taxonomy ][] = $term->slug;
 	}
 
-	return esc_url( add_query_arg( array( 'bea_taxonomy' => $taxonomies ), get_post_type_archive_link( $p_type ) ) );
-}
+	return esc_url( add_query_arg( array( 'bea_taxonomy' => $taxonomies ), get_post_type_archive_link( 'question' ) ) );
+}, 20, 3 );
 
 if ( ! post_type_exists( 'question' ) ) {
 	$labels = array(
@@ -166,6 +171,13 @@ if ( post_type_exists( 'question' ) ) {
 	}
 }
 
+/**
+ * Parse search/archive query for excluding terms
+ *
+ * @author Maxime CULEA
+ *
+ * @return \WP_Query
+ */
 add_action( 'parse_query', function ( \WP_Query $query ) {
 	if ( ! $query->is_search() && ! $query->is_archive() || ! isset( $_GET['bea_taxonomy'] ) ) {
 		return $query;
@@ -188,4 +200,21 @@ add_action( 'parse_query', function ( \WP_Query $query ) {
 	$query->set( 'tax_query', array( $tax_query ) );
 
 	return $query;
+} );
+
+add_filter( 'wp_generate_tag_cloud_data', function ( $tags_cloud ) {
+	if ( ! isset( $_GET['bea_taxonomy'] ) ) {
+		return $tags_cloud;
+	}
+
+	$g_taxonomies = $_GET['bea_taxonomy'];
+
+	foreach ( $tags_cloud as $tag => $tag_cloud ) {
+		$term = get_term( $tag_cloud['id'] );
+		if ( isset( $g_taxonomies[ $term->taxonomy ] ) ) {
+			$tags_cloud[ $tag ]['class'] = $tag_cloud['class'] . ' active';
+		}
+	}
+
+	return $tags_cloud;
 } );
