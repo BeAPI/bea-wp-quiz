@@ -179,7 +179,13 @@ if ( post_type_exists( 'question' ) ) {
  * @return \WP_Query
  */
 add_action( 'parse_query', function ( \WP_Query $query ) {
-	if ( ! $query->is_search() && ! $query->is_archive() || ! isset( $_GET['bea_taxonomy'] ) ) {
+	if ( ! $query->is_search() && ! $query->is_archive() ) {
+		return $query;
+	}
+
+	$query->set( 'orderby', 'rand' );
+
+	if ( ! isset( $_GET['bea_taxonomy'] ) ) {
 		return $query;
 	}
 
@@ -198,7 +204,6 @@ add_action( 'parse_query', function ( \WP_Query $query ) {
 	$tax_query['relation'] = 'AND';
 
 	$query->set( 'tax_query', array( $tax_query ) );
-
 	return $query;
 } );
 
