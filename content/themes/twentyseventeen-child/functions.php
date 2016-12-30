@@ -202,6 +202,11 @@ add_action( 'parse_query', function ( \WP_Query $query ) {
 	return $query;
 } );
 
+/**
+ * Customize the current selected tags
+ *
+ * @author Maxime CULEA
+ */
 add_filter( 'wp_generate_tag_cloud_data', function ( $tags_cloud ) {
 	if ( ! isset( $_GET['bea_taxonomy'] ) ) {
 		return $tags_cloud;
@@ -211,8 +216,8 @@ add_filter( 'wp_generate_tag_cloud_data', function ( $tags_cloud ) {
 
 	foreach ( $tags_cloud as $tag => $tag_cloud ) {
 		$term = get_term( $tag_cloud['id'] );
-		if ( isset( $g_taxonomies[ $term->taxonomy ] ) ) {
-			$tags_cloud[ $tag ]['class'] = $tag_cloud['class'] . ' active';
+		if ( isset( $g_taxonomies[ $term->taxonomy ] ) && in_array( $term->slug, $g_taxonomies[ $term->taxonomy ] ) ) {
+			$tags_cloud[ $tag ]['class'] = $tag_cloud['class'] . ' ignore';
 		}
 	}
 

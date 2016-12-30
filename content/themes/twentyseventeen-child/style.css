@@ -3,3 +3,16 @@ Theme Name: twentyseventeen-child
 Template: twentyseventeen
 */
 @import url("../twentyseventeen/style.css");
+
+/* Custom Style to show selected tags */
+.tagcloud a {
+    background-color: rgba(144, 238, 144, 0.2);
+    color: green;
+    border-color: rgba(0, 128, 0, 0.5) !important;
+}
+
+.tagcloud a.ignore {
+    background-color: rgba(240, 128, 128, 0.5);
+    color: red;
+    border-color: rgba(255, 0, 0, 0.5) !important;
+}
