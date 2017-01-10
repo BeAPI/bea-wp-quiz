@@ -171,6 +171,48 @@ if ( post_type_exists( 'question' ) ) {
 	}
 }
 
+add_action( 'init', function () {
+	$labels = array(
+		"name"               => __( 'Quiz', '' ),
+		"singular_name"      => __( 'Quiz', '' ),
+		"menu_name"          => __( 'Mes quiz', '' ),
+		"all_items"          => __( 'Tous les quiz', '' ),
+		"add_new"            => __( 'Ajouter un quiz', '' ),
+		"add_new_item"       => __( 'Ajouter un quiz', '' ),
+		"edit_item"          => __( 'Modifier le quiz', '' ),
+		"new_item"           => __( 'Nouveau quiz', '' ),
+		"view_item"          => __( 'Voir le quiz', '' ),
+		"search_items"       => __( 'Chercher un quiz', '' ),
+		"not_found"          => __( 'Pas de quiz trouvé', '' ),
+		"not_found_in_trash" => __( 'Pas de quiz dans la poubelle', '' ),
+		"parent_item_colon"  => __( 'Quiz parent', '' ),
+		"parent_item_colon"  => __( 'Quiz parent', '' ),
+	);
+
+	$args = array(
+		"label"               => __( 'Quiz', '' ),
+		"labels"              => $labels,
+		"description"         => "",
+		"public"              => true,
+		"publicly_queryable"  => true,
+		"show_ui"             => true,
+		"show_in_rest"        => false,
+		"rest_base"           => "",
+		"has_archive"         => false,
+		"show_in_menu"        => true,
+		"exclude_from_search" => false,
+		"capability_type"     => "post",
+		"map_meta_cap"        => true,
+		"hierarchical"        => false,
+		"rewrite"             => array( "slug" => "quiz", "with_front" => true ),
+		"query_var"           => true,
+
+		"supports"   => array( "title", "editor" ),
+		"taxonomies" => array( "type", "promotion", "niveau" ),
+	);
+	register_post_type( "quiz", $args );
+} );
+
 /**
  * Parse search/archive query for excluding terms
  *
@@ -204,6 +246,7 @@ add_action( 'parse_query', function ( \WP_Query $query ) {
 	$tax_query['relation'] = 'AND';
 
 	$query->set( 'tax_query', array( $tax_query ) );
+
 	return $query;
 } );
 
@@ -233,9 +276,8 @@ add_filter( 'wp_generate_tag_cloud_data', function ( $tags_cloud ) {
  * Create Quiz Widget
  */
 class quiz_widget extends WP_Widget {
-
 	function __construct() {
- 		parent::__construct( 'save_quiz', 'Save Quiz', array( 'description' => 'Allow to save a quiz' ) );
+		parent::__construct( 'save_quiz', 'Save Quiz', array( 'description' => 'Allow to save a quiz' ) );
 	}
 
 	public function widget( $args, $instance ) {
@@ -246,10 +288,13 @@ class quiz_widget extends WP_Widget {
 		}
 
 		echo '<section class="widget widget_text">';
-			echo '<h2 class="widget-title">Enregistrer ces questions</h2>';
-			echo '<div class="textwidget"><div class="tagcloud">';
-				printf( '<a href="%s">Générer le quiz</a>', add_query_arg( array( 'save_quiz' => true, 'ids' => wp_list_pluck( $wp_query->posts, 'ID' ) ), site_url() ) );
-			echo '</div></div>';
+		echo '<h2 class="widget-title">Enregistrer ces questions</h2>';
+		echo '<div class="textwidget"><div class="tagcloud">';
+		printf( '<a href="%s">Générer le quiz</a>', add_query_arg( array(
+			'save_quiz' => true,
+			'post_ids'  => wp_list_pluck( $wp_query->posts, 'ID' )
+		), site_url() ) );
+		echo '</div></div>';
 		echo '</section>';
 	}
 }
