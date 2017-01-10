@@ -291,8 +291,9 @@ class quiz_widget extends WP_Widget {
 		echo '<h2 class="widget-title">Enregistrer ces questions</h2>';
 		echo '<div class="textwidget"><div class="tagcloud">';
 		printf( '<a href="%s">Générer le quiz</a>', add_query_arg( array(
-			'save_quiz' => true,
-			'post_ids'  => wp_list_pluck( $wp_query->posts, 'ID' )
+			'save_quiz'    => true,
+			'post_ids'     => wp_list_pluck( $wp_query->posts, 'ID' ),
+			'bea_taxonomy' => isset( $_GET['bea_taxonomy'] ) ? $_GET['bea_taxonomy'] : array()
 		), site_url() ) );
 		echo '</div></div>';
 		echo '</section>';
@@ -309,11 +310,22 @@ add_action( 'widgets_init', function () {
 add_action( 'template_redirect', function () {
 	if ( ! is_admin() && isset( $_GET['save_quiz'] ) && true == $_GET['save_quiz'] && isset( $_GET['post_ids'] ) && ! empty( $_GET['post_ids'] ) ) {
 		$post_id = wp_insert_post( array(
-			'post_title'   => sprintf( 'Quiz n°%d', wp_count_posts( 'quiz' ) + 1 ),
+			'post_title'   => sprintf( 'Quiz n°%s', (string) wp_count_posts( 'quiz' )->publish + 1 ),
 			'post_content' => implode( ',', $_GET['post_ids'] ),
 			'post_type'    => 'quiz',
 			'post_status'  => 'publish',
 		) );
+
+		$types = get_terms( array( 'taxonomy' => 'type', 'fields' => 'id=>slug' ) );
+		if ( ! empty( $types ) && isset( $_GET['bea_taxonomy']['type'] ) ) {
+			$types_diff = array_diff( $types, $_GET['bea_taxonomy']['type'] );
+		}
+		
+		if ( ! empty( $types_diff ) ) {
+			wp_set_post_terms( $post_id, $types_diff, 'type' );
+		}
+
+		// TODO : add others taxononomies
 
 		wp_safe_redirect( get_post_permalink( $post_id ) );
 		exit;
