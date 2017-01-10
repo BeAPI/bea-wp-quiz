@@ -228,3 +228,32 @@ add_filter( 'wp_generate_tag_cloud_data', function ( $tags_cloud ) {
 
 	return $tags_cloud;
 } );
+
+/**
+ * Create Quiz Widget
+ */
+class quiz_widget extends WP_Widget {
+
+	function __construct() {
+ 		parent::__construct( 'save_quiz', 'Save Quiz', array( 'description' => 'Allow to save a quiz' ) );
+	}
+
+	public function widget( $args, $instance ) {
+		global $wp_query;
+
+		if ( ! $wp_query->have_posts() ) {
+			return;
+		}
+
+		echo '<section class="widget widget_text">';
+			echo '<h2 class="widget-title">Enregistrer ces questions</h2>';
+			echo '<div class="textwidget"><div class="tagcloud">';
+				printf( '<a href="%s">Générer le quiz</a>', add_query_arg( array( 'save_quiz' => true, 'ids' => wp_list_pluck( $wp_query->posts, 'ID' ) ), site_url() ) );
+			echo '</div></div>';
+		echo '</section>';
+	}
+}
+
+add_action( 'widgets_init', function () {
+	register_widget( 'quiz_widget' );
+} );
