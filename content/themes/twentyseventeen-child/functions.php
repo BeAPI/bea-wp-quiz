@@ -302,3 +302,20 @@ class quiz_widget extends WP_Widget {
 add_action( 'widgets_init', function () {
 	register_widget( 'quiz_widget' );
 } );
+
+/**
+ * Handle quiz redirection and then redirect to it on template redirect
+ */
+add_action( 'template_redirect', function () {
+	if ( ! is_admin() && isset( $_GET['save_quiz'] ) && true == $_GET['save_quiz'] && isset( $_GET['post_ids'] ) && ! empty( $_GET['post_ids'] ) ) {
+		$post_id = wp_insert_post( array(
+			'post_title'   => sprintf( 'Quiz n°%d', wp_count_posts( 'quiz' ) + 1 ),
+			'post_content' => implode( ',', $_GET['post_ids'] ),
+			'post_type'    => 'quiz',
+			'post_status'  => 'publish',
+		) );
+
+		wp_safe_redirect( get_post_permalink( $post_id ) );
+		exit;
+	}
+} );
