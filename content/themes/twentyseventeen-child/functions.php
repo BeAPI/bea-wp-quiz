@@ -247,6 +247,8 @@ add_action( 'parse_query', function ( \WP_Query $query ) {
 
 	$query->set( 'tax_query', array( $tax_query ) );
 
+	$query->set( 'posts_per_page', 20 );
+
 	return $query;
 } );
 
