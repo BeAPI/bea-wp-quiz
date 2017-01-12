@@ -221,7 +221,7 @@ add_action( 'init', function () {
  * @return \WP_Query
  */
 add_action( 'parse_query', function ( \WP_Query $query ) {
-	if ( ! $query->is_search() && ! $query->is_archive() ) {
+	if ( is_admin() || ( ! $query->is_search() && ! $query->is_archive() ) ) {
 		return $query;
 	}
 
