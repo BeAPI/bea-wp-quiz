@@ -82,7 +82,7 @@ if ( ! post_type_exists( 'question' ) ) {
 		"show_ui"             => true,
 		"show_in_rest"        => false,
 		"rest_base"           => "",
-		"has_archive"         => true,
+		"has_archive"         => 'questions',
 		"show_in_menu"        => true,
 		"exclude_from_search" => false,
 		"capability_type"     => "post",
@@ -108,16 +108,16 @@ if ( post_type_exists( 'question' ) ) {
 			"label"              => __( 'Types', '' ),
 			"labels"             => $labels,
 			"public"             => true,
-			"hierarchical"       => false,
+			"hierarchical"       => true,
 			"show_ui"            => true,
 			"show_in_menu"       => true,
 			"show_in_nav_menus"  => true,
 			"query_var"          => true,
 			"rewrite"            => array( 'slug' => 'type', 'with_front' => true, ),
-			"show_admin_column"  => false,
+			"show_admin_column"  => true,
 			"show_in_rest"       => false,
 			"rest_base"          => "",
-			"show_in_quick_edit" => false,
+			"show_in_quick_edit" => true,
 		);
 		register_taxonomy( "type", array( "question" ), $args );
 	}
@@ -132,16 +132,16 @@ if ( post_type_exists( 'question' ) ) {
 			"label"              => __( 'Promotions', '' ),
 			"labels"             => $labels,
 			"public"             => true,
-			"hierarchical"       => false,
+			"hierarchical"       => true,
 			"show_ui"            => true,
 			"show_in_menu"       => true,
 			"show_in_nav_menus"  => true,
 			"query_var"          => true,
 			"rewrite"            => array( 'slug' => 'promotion', 'with_front' => true, ),
-			"show_admin_column"  => false,
-			"show_in_rest"       => false,
+			"show_admin_column"  => true,
+			"show_in_rest"       => true,
 			"rest_base"          => "",
-			"show_in_quick_edit" => false,
+			"show_in_quick_edit" => true,
 		);
 		register_taxonomy( "promotion", array( "question" ), $args );
 	}
@@ -156,16 +156,16 @@ if ( post_type_exists( 'question' ) ) {
 			"label"              => __( 'Niveaux', '' ),
 			"labels"             => $labels,
 			"public"             => true,
-			"hierarchical"       => false,
+			"hierarchical"       => true,
 			"show_ui"            => true,
 			"show_in_menu"       => true,
 			"show_in_nav_menus"  => true,
 			"query_var"          => true,
 			"rewrite"            => array( 'slug' => 'niveau', 'with_front' => true, ),
-			"show_admin_column"  => false,
+			"show_admin_column"  => true,
 			"show_in_rest"       => false,
 			"rest_base"          => "",
-			"show_in_quick_edit" => false,
+			"show_in_quick_edit" => true,
 		);
 		register_taxonomy( "niveau", array( "question" ), $args );
 	}
@@ -289,13 +289,33 @@ class quiz_widget extends WP_Widget {
 			return;
 		}
 
+		if ( is_singular() ) {
+			$this->do_export( $wp_query );
+		} else {
+			$this->save_questions( $wp_query );
+		}
+	}
+
+	public function save_questions( $_q ) {
 		echo '<section class="widget widget_text">';
 		echo '<h2 class="widget-title">Enregistrer ces questions</h2>';
 		echo '<div class="textwidget"><div class="tagcloud">';
 		printf( '<a href="%s">Générer le quiz</a>', add_query_arg( array(
 			'save_quiz'    => true,
-			'post_ids'     => wp_list_pluck( $wp_query->posts, 'ID' ),
+			'post_ids'     => wp_list_pluck( $_q->posts, 'ID' ),
 			'bea_taxonomy' => isset( $_GET['bea_taxonomy'] ) ? $_GET['bea_taxonomy'] : array()
+		), site_url() ) );
+		echo '</div></div>';
+		echo '</section>';
+	}
+
+	public function do_export( $_q ) {
+		echo '<section class="widget widget_text">';
+		echo '<h2 class="widget-title">Exporter ces questions</h2>';
+		echo '<div class="textwidget"><div class="tagcloud">';
+		printf( '<a href="%s" target="_blank">Exporter</a>', add_query_arg( array(
+			'do_export' => true,
+			'post_ids'  => explode( ',', $_q->post->post_content ),
 		), site_url() ) );
 		echo '</div></div>';
 		echo '</section>';
@@ -322,7 +342,7 @@ add_action( 'template_redirect', function () {
 		if ( ! empty( $types ) && isset( $_GET['bea_taxonomy']['type'] ) ) {
 			$types_diff = array_diff( $types, $_GET['bea_taxonomy']['type'] );
 		}
-		
+
 		if ( ! empty( $types_diff ) ) {
 			wp_set_post_terms( $post_id, $types_diff, 'type' );
 		}
@@ -331,5 +351,38 @@ add_action( 'template_redirect', function () {
 
 		wp_safe_redirect( get_post_permalink( $post_id ) );
 		exit;
+	}
+} );
+
+/**
+ * Handle quiz export
+ */
+add_action( 'template_redirect', function () {
+	if ( ! is_admin() && isset( $_GET['do_export'] ) && true == $_GET['do_export'] && isset( $_GET['post_ids'] ) && ! empty( $_GET['post_ids'] ) ) {
+		$_q = new WP_Query( array(
+			'post_type'      => 'question',
+			'post__in'       => $_GET['post_ids'],
+			'posts_per_page' => - 1,
+		) );
+		echo '<ol type="1">';
+		foreach ( $_q->posts as $question ) {
+			$qcm = $question->post_content;
+			preg_match_all( '/(Réponse :.*)/', $qcm, $matches );
+			if ( ! empty( $matches ) ) {
+				$qcm = str_replace( $matches[0][0], '', $qcm );
+			}
+			preg_match_all( '/(Réponses :.*)/', $qcm, $matches );
+			if ( ! empty( $matches ) ) {
+				$qcm = str_replace( $matches[0][0], '', $qcm );
+			}
+
+			echo '<li>';
+			echo $question->post_title;
+			echo '<br>';
+			echo $qcm;
+			echo '</li>';
+		}
+		echo '</ol>';
+		die();
 	}
 } );
