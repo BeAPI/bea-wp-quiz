@@ -2,7 +2,7 @@
 Manage set of questions/answers and easily generate quiz.
 
 # How ?
-*/!\ Not recommended for production site as it is still in developpement. /!\*
+**/!\ Not recommended for production site as it is still in developpement. /!\\**
 
 Work as childtheme of [twentyseventeen](https://fr.wordpress.org/themes/twentyseventeen) with required [ACF](https://www.advancedcustomfields.com/) plugin.
 
